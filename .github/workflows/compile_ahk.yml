@@ -1,0 +1,37 @@
+name: Build Binary and release
+
+on:
+  push:
+#    tags:
+#    - '*'
+
+permissions:
+  contents: write
+
+jobs:
+  BuildAndRelease:
+    name: Build and Release
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: 'true'
+
+      - name: Install AutoHotKey & Compile
+        shell: pwsh
+        run: |
+          $cwd = (Get-Item .).FullName;
+          Invoke-WebRequest "https://github.com/AutoHotkey/Ahk2Exe/releases/download/Ahk2Exe1.1.37.02a0/Ahk2Exe1.1.37.02a0.zip" -OutFile "autohotkey.zip";
+          Invoke-WebRequest "https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.19/AutoHotkey_2.0.19.zip" -OutFile "autohotkey_base.zip";
+          Expand-Archive -Path "$cwd\autohotkey.zip" -DestinationPath "$cwd\" -Force;
+          Expand-Archive -Path "$cwd\autohotkey_base.zip" -DestinationPath "$cwd\" -Force;
+          Remove-Item -Path "$cwd\autohotkey.zip" -Force;
+          Remove-Item -Path "$cwd\autohotkey_base.zip" -Force;
+          .\Ahk2Exe.exe /silent verbose /in automate_import.ahk /out automate_import.exe /base ".\AutoHotkey32.exe";
+          dir;
+          
+      - name: Release # Upload binary to most recent release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: automate_import.exe
