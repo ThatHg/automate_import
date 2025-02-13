@@ -2,8 +2,8 @@ name: Build Binary and release
 
 on:
   push:
-#    tags:
-#    - '*'
+    tags:
+    - '*'
 
 permissions:
   contents: write
